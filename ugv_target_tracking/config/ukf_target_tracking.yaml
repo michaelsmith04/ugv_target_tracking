@@ -1,0 +1,101 @@
+### robot_localization ukf_node configuration
+### Single-target 3D position tracking, fed by lidar_pose_converter and
+### oak_pose_converter. Pan-tilt input removed for now -- add back as pose2
+### once that sensor's conversion node exists.
+
+ukf_filter_node:
+  ros__parameters:
+
+    frequency: 20.0
+    sensor_timeout: 0.3
+    two_d_mode: true
+    #two_d_mode: true
+
+    map_frame: target_map
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: odom
+
+    smooth_lagged_data: true
+    history_length: 4.0
+    predict_to_current_time: true
+
+    transform_time_offset: 0.0
+    transform_timeout: 0.1
+    print_diagnostics: true
+    publish_tf: false
+    publish_acceleration: false
+
+    # ---- Sensor input 0: LiDAR / DR-SPAAM (via lidar_pose_converter) ----
+    #pose0: /target/lidar/pose_gated
+    #pose0_config: [true,  true,  false,
+    #               false, false, false,
+    #               false, false, false,
+    #               false, false, false,
+    #               false, false, false]
+    #pose0_differential: false
+    #pose0_relative: false
+    #pose0_queue_size: 5
+    #pose0_pose_rejection_threshold: 5.0   # START PERMISSIVE, tighten after
+                                            # watching /diagnostics_agg
+
+    # ---- Sensor input 1: OAK-D-LITE (via oak_pose_converter) ----
+    pose0: /target/oak/pose_gated
+    pose0_config: [true,  true,  true,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    pose0_differential: false
+    pose0_relative: false
+    pose0_queue_size: 10
+    pose0_pose_rejection_threshold: 3.0
+
+        # ---- Sensor input 2: Pan-tilt camera (leg-to-floor projection) ----
+    pose1: /pantilt/pose_inflated
+    #pose1: /pantilt/pose_estimates
+    pose1_config: [true,  true,  true,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    pose1_differential: false
+    pose1_relative: false
+    pose1_queue_size: 10
+    pose1_pose_rejection_threshold: 3.0   # START PERMISSIVE, tighten after
+                                            # watching /diagnostics_agg
+
+    # Process noise covariance -- constant-velocity-friendly starting point.
+    # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
+    process_noise_covariance: [0.05,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.05,   0.0,    0.0,    0.0,    0.0,    0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.06,   0.0,    0.0,    0.0,    0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.0,    0.03,   0.0,    0.0,    0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.03,   0.0,    0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.0,    0.02,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-6,  0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,   1e-6,  0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,   0.0,   0.1,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,   0.0,   0.0,   0.1,   0.0,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,   0.0,   0.0,   0.0,   0.1,   0.0,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,   0.0,   0.0,   0.0,   0.0,   0.1,   0.0,   0.0,   0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   1e-6,  0.0,  0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   1e-6,  0.0,
+                               0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   1e-03]
+
+    initial_estimate_covariance: [10.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,    10.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    10.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.5,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.5,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.5,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,   1e-6,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-6,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-06,  0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-06,  0.0,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-06,  0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-6,   0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-6,   0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.01]
+ 
